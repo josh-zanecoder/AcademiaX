@@ -1,0 +1,206 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AcademiaX - Transform Your Learning Journey</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .wave-bg {
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 1440 320'%3E%3Cpath fill='%234f46e5' fill-opacity='0.05' d='M0,192L48,197.3C96,203,192,213,288,229.3C384,245,480,267,576,250.7C672,235,768,181,864,181.3C960,181,1056,235,1152,234.7C1248,235,1344,181,1392,154.7L1440,128L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z'%3E%3C/path%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: bottom;
+            background-size: cover;
+        }
+        
+        .dots-bg {
+            background-image: radial-gradient(#4f46e5 0.5px, transparent 0.5px), radial-gradient(#4f46e5 0.5px, transparent 0.5px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+            background-color: transparent;
+            opacity: 0.05;
+        }
+
+        .lines-bg {
+            background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%234f46e5' fill-opacity='0.05'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+        }
+
+        @media (max-width: 640px) {
+            .wave-bg {
+                background-size: 200% 100%;
+            }
+            .dots-bg {
+                background-size: 15px 15px;
+            }
+        }
+
+        /* Smooth scrolling for the whole page */
+        html {
+            scroll-behavior: smooth;
+        }
+
+        /* Custom scrollbar */
+        ::-webkit-scrollbar {
+            width: 10px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #4f46e5;
+            border-radius: 5px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #4338ca;
+        }
+
+        /* Animation for background patterns */
+        @keyframes float {
+            0% {
+                transform: translateY(0px);
+            }
+            50% {
+                transform: translateY(-20px);
+            }
+            100% {
+                transform: translateY(0px);
+            }
+        }
+
+        .floating {
+            animation: float 15s ease-in-out infinite;
+        }
+    </style>
+</head>
+<body class="bg-gradient-to-br from-gray-50 to-gray-100">
+    <div class="min-h-screen relative overflow-hidden">
+        <!-- Background Decorative Elements -->
+        <div class="absolute inset-0 wave-bg floating"></div>
+        <div class="absolute inset-0 dots-bg"></div>
+        <div class="absolute inset-0 lines-bg"></div>
+
+        <!-- Main Content (existing) -->
+        <div class="relative"> <!-- Add this wrapper to keep content above background -->
+            <!-- Navigation -->
+            <nav class="bg-white/80 backdrop-blur-md fixed w-full z-50 shadow-sm">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+                    <div class="flex justify-between h-16">
+                        <div class="flex items-center">
+                            <h1 class="text-2xl font-bold text-indigo-600">AcademiaX</h1>
+                        </div>
+                        <div class="hidden md:flex items-center space-x-8">
+                            <a href="#" class="text-gray-700 hover:text-indigo-600">Courses</a>
+                            <a href="#" class="text-gray-700 hover:text-indigo-600">About</a>
+                            <a href="#" class="text-gray-700 hover:text-indigo-600">Contact</a>
+                            <button class="bg-indigo-600 text-white px-4 py-2 rounded-md hover:bg-indigo-700">
+                                Get Started
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Hero Section -->
+            <div class="bg-white/50 backdrop-blur-sm pt-24">
+                <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                    <div class="text-center">
+                        <span class="text-indigo-600 font-semibold text-lg">Welcome to the Future of Learning</span>
+                        <h2 class="text-4xl font-extrabold text-gray-900 sm:text-6xl mt-4 bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600 [background-clip:text] pb-3">
+                            Transform Your Future with Online Learning
+                        </h2>
+                        <p class="mt-7 text-xl text-gray-600 max-w-2xl mx-auto my-auto">
+                            Access world-class education from anywhere, anytime. Join thousands of learners worldwide.
+                        </p>
+                        <div class="mt-10 flex gap-4 justify-center">
+                            <button class="bg-gradient-to-r from-indigo-600 to-purple-600 text-white px-8 py-4 rounded-full text-lg font-medium hover:shadow-lg hover:scale-105 transition-all duration-300">
+                                Get Started Now
+                            </button>
+                            <button class="bg-white text-indigo-600 px-8 py-4 rounded-full text-lg font-medium border-2 border-indigo-600 hover:shadow-lg hover:scale-105 transition-all duration-300">
+                                View Courses
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Values/Benefits Section -->
+            <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-20">
+                <div class="text-center mb-16">
+                    <h3 class="text-3xl font-bold text-gray-900">Why Choose AcademiaX</h3>
+                    <p class="mt-4 text-xl text-gray-600">Discover the advantages that set us apart</p>
+                </div>
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+                    <!-- Value 1 -->
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] p-8">
+                        <div class="flex justify-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <span class="text-3xl">🌌</span>
+                            </div>
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-900 text-center mb-4">Quantum Learning</h4>
+                        <p class="text-gray-600 text-center">Experience education at the speed of thought with our revolutionary quantum-inspired learning algorithms.</p>
+                    </div>
+
+                    <!-- Value 2 -->
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] p-8">
+                        <div class="flex justify-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <span class="text-3xl">⌛</span>
+                            </div>
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-900 text-center mb-4">Time Bending</h4>
+                        <p class="text-gray-600 text-center">Master the art of chronological flexibility. Learn yesterday what you need tomorrow, today.</p>
+                    </div>
+
+                    <!-- Value 3 -->
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] p-8">
+                        <div class="flex justify-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <span class="text-3xl">🧠</span>
+                            </div>
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-900 text-center mb-4">Mind Melding</h4>
+                        <p class="text-gray-600 text-center">Connect directly with expert brains through our patented knowledge osmosis technology.</p>
+                    </div>
+
+                    <!-- Value 4 -->
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] p-8">
+                        <div class="flex justify-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <span class="text-3xl">💫</span>
+                            </div>
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-900 text-center mb-4">Dream Programming</h4>
+                        <p class="text-gray-600 text-center">Upload new skills while you sleep. Wake up smarter than ever with our nocturnal learning system.</p>
+                    </div>
+
+                    <!-- Value 5 -->
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] p-8">
+                        <div class="flex justify-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <span class="text-3xl">🚀</span>
+                            </div>
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-900 text-center mb-4">Gravity-Free Thinking</h4>
+                        <p class="text-gray-600 text-center">Break free from earthly constraints. Our zero-gravity mindspace enables unlimited creative potential.</p>
+                    </div>
+
+                    <!-- Value 6 -->
+                    <div class="bg-white rounded-2xl shadow-md overflow-hidden hover:shadow-xl transition-all duration-300 hover:scale-[1.02] p-8">
+                        <div class="flex justify-center mb-6">
+                            <div class="w-16 h-16 rounded-full bg-indigo-100 flex items-center justify-center">
+                                <span class="text-3xl">👾</span>
+                            </div>
+                        </div>
+                        <h4 class="text-xl font-semibold text-gray-900 text-center mb-4">Holographic Wisdom</h4>
+                        <p class="text-gray-600 text-center">Access ancient knowledge through state-of-the-art holographic mentors from across dimensions.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
