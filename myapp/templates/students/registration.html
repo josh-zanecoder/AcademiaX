@@ -1,10 +1,16 @@
+{% load static %}
 <!DOCTYPE html>
 <html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Student registration page for joining our learning community. Create your account to get started with our courses.">
     <title>Student Registration</title>
+    <!-- Add favicon -->
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon/favicon.ico' %}">
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Add SweetAlert2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 <body class="bg-gradient-to-br from-blue-50 via-purple-50 to-indigo-100 min-h-screen py-12 px-4 sm:px-6 lg:px-8">
     <!-- Back Arrow -->
@@ -22,14 +28,15 @@
         <div class="bg-white/80 backdrop-blur-lg rounded-3xl shadow-2xl p-8 border border-white/20">
             <!-- Header -->
             <div class="text-center mb-8">
-                <h2 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                <h2 class="text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent pb-1">
                     Student Registration
                 </h2>
                 <p class="text-gray-600 mt-2">Join our community of learners</p>
             </div>
 
             <!-- Registration Form -->
-            <form class="space-y-8">
+            <form class="space-y-8" id="registrationForm" onsubmit="registerStudent(event)">
+                {% csrf_token %}
                 <!-- Personal Information Section -->
                 <div class="space-y-6">
                     <div class="flex items-center gap-2">
@@ -42,7 +49,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1" for="firstName">
                                 First Name <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="firstName" name="firstName" required
+                            <input type="text" id="first_name" name="first_name" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 outline-none group-hover:border-purple-400">
                         </div>
                         
@@ -50,7 +57,7 @@
                             <label class="block text-sm font-medium text-gray-700 mb-1" for="lastName">
                                 Last Name <span class="text-red-500">*</span>
                             </label>
-                            <input type="text" id="lastName" name="lastName" required
+                            <input type="text" id="last_name" name="last_name" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 outline-none group-hover:border-purple-400">
                         </div>
                     </div>
@@ -86,8 +93,10 @@
                         <div class="relative">
                             <input type="password" id="password" name="password" required
                                 class="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-300 outline-none group-hover:border-purple-400">
-                            <button type="button" onclick="togglePassword()" 
-                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors duration-300">
+                            <button type="button" 
+                                onclick="togglePassword()" 
+                                aria-label="Toggle password visibility"
+                                class="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-purple-600 transition-colors duration-300 p-2">
                                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" 
                                     stroke="currentColor" class="w-5 h-5" id="eyeIcon">
                                     <path stroke-linecap="round" stroke-linejoin="round" 
@@ -137,6 +146,87 @@
                 `;
             }
         }
+
+        async function registerStudent(event) {
+            event.preventDefault();
+
+            // Show loading state
+            const submitButton = event.target.querySelector('button[type="submit"]');
+            const originalButtonText = submitButton.innerHTML;
+            submitButton.innerHTML = 'Creating Account...';
+            submitButton.disabled = true;
+
+            const formData = {
+                username: document.getElementById('username').value,
+                email: document.getElementById('email').value,
+                password: document.getElementById('password').value,
+                first_name: document.getElementById('first_name').value,
+                last_name: document.getElementById('last_name').value
+            };
+
+            try {
+                const response = await fetch('/api/register/', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await response.json();
+                
+                if (data.status === 'success') {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Registration Successful!',
+                        text: 'Your account has been created successfully.',
+                        confirmButtonText: 'Continue',
+                        confirmButtonColor: '#6366f1',
+                        allowOutsideClick: false
+                    });
+                    // Redirect to home page or login page
+                    window.location.href = '/';
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Registration Failed',
+                        text: data.message || 'Please check your information and try again.',
+                        confirmButtonColor: '#6366f1'
+                    });
+                }
+            } catch (error) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong! Please try again later.',
+                    confirmButtonColor: '#6366f1'
+                });
+            } finally {
+                // Restore button state
+                submitButton.innerHTML = originalButtonText;
+                submitButton.disabled = false;
+            }
+        }
+
+        // Add client-side validation for password
+        document.getElementById('password').addEventListener('input', function(e) {
+            const password = e.target.value;
+            if (password.length < 8) {
+                e.target.setCustomValidity('Password must be at least 8 characters long');
+            } else {
+                e.target.setCustomValidity('');
+            }
+        });
+
+        // Add validation for terms checkbox
+        document.getElementById('terms').addEventListener('change', function(e) {
+            if (!e.target.checked) {
+                e.target.setCustomValidity('You must accept the terms and conditions');
+            } else {
+                e.target.setCustomValidity('');
+            }
+        });
     </script>
 </body>
 </html>
