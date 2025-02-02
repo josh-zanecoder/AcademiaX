@@ -1,9 +1,13 @@
 from rest_framework import serializers
-from .models import User, Student
+from .models import Student, UserProfile
+from django.contrib.auth import authenticate
+from django.contrib.auth.hashers import check_password
+from django.contrib.auth.models import User as DjangoUser
+
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = User
+        model = UserProfile
         fields = ['id', 'role', 'username', 'email', 'password', 'created_at', 'updated_at']
         extra_kwargs = {
             'password': {'write_only': True}  # Password will not be included in responses
@@ -32,14 +36,64 @@ class StudentCreateSerializer(serializers.ModelSerializer):
         email = validated_data.pop('email')
         password = validated_data.pop('password')
         
-        # Create user
-        user = User.objects.create(
+        # Create Django User
+        user = DjangoUser.objects.create_user(
             username=username,
             email=email,
-            password=password,  # In production, use set_password() for proper hashing
+            password=password
+        )
+        
+        # Create UserProfile
+        UserProfile.objects.create(
+            user=user,
             role='student'
         )
         
         # Create student profile
         student = Student.objects.create(user=user, **validated_data)
-        return student 
+        return student
+
+class LoginSerializer(serializers.Serializer):
+    username = serializers.CharField(required=True)
+    password = serializers.CharField(required=True, write_only=True)
+    remember = serializers.BooleanField(default=False)
+
+    def validate(self, attrs):
+        username = attrs.get('username')
+        password = attrs.get('password')
+
+        # Use Django's built-in authenticate
+        user = authenticate(username=username, password=password)
+        
+        if user is None:
+            raise serializers.ValidationError({
+                'non_field_errors': ['Invalid username or password']
+            })
+            
+        if not user.is_active:
+            raise serializers.ValidationError({
+                'non_field_errors': ['Account is inactive']
+            })
+
+        # First check if user is superuser
+        if user.is_superuser:
+            attrs['user'] = user
+            attrs['is_superuser'] = True
+            return attrs
+
+        # If not superuser, check if they're a student
+        try:
+            student = user.student
+            if not hasattr(user, 'student'):
+                raise serializers.ValidationError({
+                    'non_field_errors': ['Access denied. Invalid account type.']
+                })
+            attrs['user'] = user
+            attrs['is_superuser'] = False
+            return attrs
+        except (Student.DoesNotExist, AttributeError):
+            raise serializers.ValidationError({
+                'non_field_errors': ['Access denied. Student login only.']
+            })
+
+        return attrs 
