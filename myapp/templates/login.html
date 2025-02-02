@@ -146,27 +146,52 @@
                 });
 
                 const data = await response.json();
+                console.log('Response:', data);
 
-                if (data.status === 'success') {
+                if (response.ok && data.status === 'success') {
+                    let welcomeMessage = data.user.is_superuser 
+                        ? 'Welcome, Administrator!'
+                        : `Welcome back, ${data.user.first_name}!`;
+                    
                     await Swal.fire({
                         icon: 'success',
-                        title: 'Welcome Back!',
-                        text: 'Signed in successfully.',
+                        title: 'Signed in successfully!',
+                        text: welcomeMessage,
                         confirmButtonText: 'Continue',
                         confirmButtonColor: '#6366f1',
                         timer: 1500,
                         showConfirmButton: false
                     });
-                    window.location.href = '/dashboard/';
+                    window.location.href = data.redirect;
                 } else {
+                    // Extract error message
+                    let errorMessage = 'Invalid username or password';
+                    if (data.message) {
+                        if (typeof data.message === 'object') {
+                            // Handle field-specific errors
+                            const errors = [];
+                            Object.entries(data.message).forEach(([field, messages]) => {
+                                if (Array.isArray(messages)) {
+                                    messages.forEach(msg => {
+                                        errors.push(msg);
+                                    });
+                                }
+                            });
+                            errorMessage = errors.join('\n');
+                        } else {
+                            errorMessage = data.message;
+                        }
+                    }
+                    
                     Swal.fire({
                         icon: 'error',
                         title: 'Sign In Failed',
-                        text: data.message || 'Invalid username or password.',
+                        text: errorMessage,
                         confirmButtonColor: '#6366f1'
                     });
                 }
             } catch (error) {
+                console.error('Login error:', error);
                 Swal.fire({
                     icon: 'error',
                     title: 'Oops...',
