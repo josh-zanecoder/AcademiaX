@@ -53,14 +53,14 @@
                    class="block py-2.5 px-4 rounded transition duration-200 {% if request.path == '/admin/students/' %}bg-blue-500{% else %}hover:bg-gray-700{% endif %}">
                     <div class="flex items-center space-x-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/>
                         </svg>
                         <span>Students</span>
                     </div>
                 </a>
 
-                <a href="#" 
-                   class="block py-2.5 px-4 rounded transition duration-200 {% if request.path == '/admin/teachers/' %}bg-blue-500{% else %}hover:bg-gray-700{% endif %}">
+                <a href="{% url 'manage_teachers' %}" 
+                   class="block py-2.5 px-4 rounded transition duration-200 {% if request.path == '/manage_teachers/' %}bg-blue-500{% else %}hover:bg-gray-700{% endif %}">
                     <div class="flex items-center space-x-2">
                         <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2" />
@@ -96,8 +96,8 @@
         </div>
 
         <!-- Main Content -->
-        <div class="flex-1 flex flex-col">
-            <!-- Top Navigation Bar -->
+        <div class="flex-1 flex flex-col h-screen overflow-hidden">
+            <!-- Top Navigation Bar - Fixed -->
             <div class="bg-white shadow-md">
                 <div class="flex items-center px-4 py-4">
                     <!-- Mobile menu button -->
@@ -113,94 +113,129 @@
                     <!-- Right side of navbar -->
                     <div class="ml-auto flex items-center">
                         <span class="text-gray-600 mr-4">Welcome, {{ user.username }}</span>
-                      
                     </div>
                 </div>
             </div>
 
-            <!-- Page Content Container -->
-            <div class="container mx-auto px-6 py-8">
-                {% block main_content %}
-                <!-- Stats Section -->
-                <section aria-labelledby="stats-heading">
-                    <h2 id="stats-heading" class="sr-only">Statistics Overview</h2>
-                    <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                        <!-- Students Card -->
-                        <div class="bg-white overflow-hidden shadow rounded-lg">
-                            <div class="p-5">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 bg-blue-700 rounded-md p-3">
-                                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
-                                        </svg>
+            <!-- Scrollable Content Area -->
+            <div class="flex-1 overflow-y-auto">
+                <div class="w-full px-6 py-8">
+                    {% block main_content %}
+                    <!-- Stats Section -->
+                    <section aria-labelledby="stats-heading" class="mb-6">
+                        <h2 id="stats-heading" class="sr-only">Statistics Overview</h2>
+                        <div class="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+                            <!-- Students Card -->
+                            <div class="bg-white overflow-hidden shadow rounded-lg">
+                                <div class="p-5">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 bg-blue-700 rounded-md p-3">
+                                            <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-5">
+                                            <h3 class="text-xl font-semibold text-gray-900">Students</h3>
+                                            <p class="mt-1 text-3xl font-bold text-gray-900">{{ student_count }}</p>
+                                        </div>
                                     </div>
-                                    <div class="ml-5">
-                                        <h3 class="text-xl font-semibold text-gray-900">Students</h3>
-                                        <p class="mt-1 text-3xl font-bold text-gray-900">{{ student_count }}</p>
+                                </div>
+                                <div class="bg-gray-100 px-5 py-3">
+                                    <div class="text-sm">
+                                        <a href="#" class="font-semibold text-blue-800 hover:text-blue-900" aria-label="View all students">
+                                            View all students →
+                                        </a>
                                     </div>
                                 </div>
                             </div>
-                            <div class="bg-gray-100 px-5 py-3">
-                                <div class="text-sm">
-                                    <a href="#" class="font-semibold text-blue-800 hover:text-blue-900" aria-label="View all students">
-                                        View all students →
-                                    </a>
+
+                            <!-- Teachers Card -->
+                            <div class="bg-white overflow-hidden shadow rounded-lg">
+                                <div class="p-5">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 bg-purple-700 rounded-md p-3">
+                                            <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-5">
+                                            <h3 class="text-xl font-semibold text-gray-900">Teachers</h3>
+                                            <p class="mt-1 text-3xl font-bold text-gray-900">{{ teacher_count }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-100 px-5 py-3">
+                                    <div class="text-sm">
+                                        <a href="{% url 'manage_teachers' %}" class="font-semibold text-purple-800 hover:text-purple-900" aria-label="View all teachers">
+                                            View all teachers →
+                                        </a>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Courses Card -->
+                            <div class="bg-white overflow-hidden shadow rounded-lg">
+                                <div class="p-5">
+                                    <div class="flex items-center">
+                                        <div class="flex-shrink-0 bg-green-700 rounded-md p-3">
+                                            <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                            </svg>
+                                        </div>
+                                        <div class="ml-5">
+                                            <h3 class="text-xl font-semibold text-gray-900">Courses</h3>
+                                            <p class="mt-1 text-3xl font-bold text-gray-900">{{ course_count }}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="bg-gray-100 px-5 py-3">
+                                    <div class="text-sm">
+                                        <a href="{% url 'manage_courses' %}" class="font-semibold text-green-800 hover:text-green-900" aria-label="View all courses">
+                                            View all courses →
+                                        </a>
+                                    </div>
                                 </div>
                             </div>
                         </div>
+                    </section>
 
-                        <!-- Teachers Card -->
-                        <div class="bg-white overflow-hidden shadow rounded-lg">
-                            <div class="p-5">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 bg-purple-700 rounded-md p-3">
-                                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 20H5a2 2 0 01-2-2V6a2 2 0 012-2h10a2 2 0 012 2v1m2 13a2 2 0 01-2-2V7m2 13a2 2 0 002-2V9.5a2 2 0 00-2-2h-2"/>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-5">
-                                        <h3 class="text-xl font-semibold text-gray-900">Teachers</h3>
-                                        <p class="mt-1 text-3xl font-bold text-gray-900">{{ teacher_count }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-gray-100 px-5 py-3">
-                                <div class="text-sm">
-                                    <a href="#" class="font-semibold text-purple-800 hover:text-purple-900" aria-label="View all teachers">
-                                        View all teachers →
-                                    </a>
-                                </div>
-                            </div>
-                        </div>
-
-                        <!-- Courses Card -->
-                        <div class="bg-white overflow-hidden shadow rounded-lg">
-                            <div class="p-5">
-                                <div class="flex items-center">
-                                    <div class="flex-shrink-0 bg-green-700 rounded-md p-3">
-                                        <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24" aria-hidden="true">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
-                                        </svg>
-                                    </div>
-                                    <div class="ml-5">
-                                        <h3 class="text-xl font-semibold text-gray-900">Courses</h3>
-                                        <p class="mt-1 text-3xl font-bold text-gray-900">{{ course_count }}</p>
-                                    </div>
-                                </div>
-                            </div>
-                            <div class="bg-gray-100 px-5 py-3">
-                                <div class="text-sm">
-                                    <a href="#" class="font-semibold text-green-800 hover:text-green-900" aria-label="View all courses">
-                                        View all courses →
-                                    </a>
-                                </div>
-                            </div>
+                    <!-- Content Area -->
+                    <div class="bg-white rounded-lg shadow">
+                        <div class="p-6">
+                            {% block content %}{% endblock %}
                         </div>
                     </div>
-                </section>
-                {% endblock %}
+                    {% endblock %}
+                </div>
             </div>
         </div>
     </div>
+
+    <style>
+        /* Custom scrollbar styles */
+        .overflow-y-auto::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-track {
+            background: #f1f1f1;
+            border-radius: 3px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb {
+            background: #888;
+            border-radius: 3px;
+        }
+
+        .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+            background: #555;
+        }
+
+        /* Firefox scrollbar */
+        .overflow-y-auto {
+            scrollbar-width: thin;
+            scrollbar-color: #888 #f1f1f1;
+        }
+    </style>
 </body>
 </html>

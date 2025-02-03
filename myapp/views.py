@@ -1,12 +1,13 @@
 from django.shortcuts import render, redirect
 from rest_framework import status
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
-from .serializers import StudentCreateSerializer, LoginSerializer
+from .serializers import StudentCreateSerializer, LoginSerializer, TeacherListSerializer
 from django.contrib.auth import login, authenticate, logout
 import logging
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Student
+from .models import Student, Teacher
+from rest_framework.permissions import IsAdminUser
 
 logger = logging.getLogger(__name__)
 
@@ -118,4 +119,11 @@ def login_user(request):
 def logout_user(request):
     logout(request)
     return redirect('index')  # Redirect to home page after logout
+
+@api_view(['GET'])
+@permission_classes([IsAdminUser])
+def get_teachers(request):
+    teachers = Teacher.objects.all()
+    serializer = TeacherListSerializer(teachers, many=True)
+    return Response(serializer.data)
 
