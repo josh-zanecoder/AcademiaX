@@ -23,9 +23,17 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = 'django-insecure-$#7k_&5ztn$fpkv+h5+ev+4%#5xt6^q#ajin8jp0x!2dgmrk%('
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = False
+DEBUG = True
 
-ALLOWED_HOSTS = ['academiax.pythonanywhere.com']
+ALLOWED_HOSTS = ['academiax.pythonanywhere.com','localhost',
+    '127.0.0.1',
+    '.ngrok.io',  # Allow all ngrok domains
+    '.ngrok-free.app'  # For newer ngrok versions   
+]
+CSRF_TRUSTED_ORIGINS = [
+    'https://*.ngrok.io',
+    'https://*.ngrok-free.app'
+]
 
 
 # Application definition
@@ -118,6 +126,9 @@ USE_TZ = True
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATICFILES_DIRS = [
+    BASE_DIR / "static",
+]
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
