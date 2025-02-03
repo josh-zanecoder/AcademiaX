@@ -9,7 +9,10 @@ def index(request):
     return render(request, 'index.html')
 
 def registration(request):
-    return render(request, 'students/registration.html')
+    return render(request, 'registration.html')
+
+def login(request):
+    return render(request, 'login.html')
 
 @api_view(['POST'])
 def register_student(request):
