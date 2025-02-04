@@ -1,25 +1,23 @@
 from rest_framework import serializers
-from .models import Student, UserProfile, Course, Teacher
-from django.contrib.auth import authenticate
+from .models import Student, UserProfile, Course, Teacher, Lesson, LessonResource
+from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User as DjangoUser
 import json
 
+User = get_user_model()
 
 class UserSerializer(serializers.ModelSerializer):
     class Meta:
-        model = UserProfile
-        fields = ['id', 'role', 'username', 'email', 'password', 'created_at', 'updated_at']
-        extra_kwargs = {
-            'password': {'write_only': True}  # Password will not be included in responses
-        }
+        model = User
+        fields = ['id', 'email', 'first_name', 'last_name']
 
-class StudentSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)  # Nested serializer for user details
+class UserProfileSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
     
     class Meta:
-        model = Student
-        fields = ['id', 'user', 'first_name', 'last_name']
+        model = UserProfile
+        fields = ['user', 'role']
 
 # For creating/updating students with user information
 class StudentCreateSerializer(serializers.ModelSerializer):
@@ -79,30 +77,37 @@ class LoginSerializer(serializers.Serializer):
         # First check if user is superuser
         if user.is_superuser:
             attrs['user'] = user
-            attrs['is_superuser'] = True
+            attrs['user_type'] = 'admin'
             return attrs
 
-        # If not superuser, check if they're a student
+        # Check if they're a teacher
         try:
-            student = user.student
-            if not hasattr(user, 'student'):
+            teacher = user.teacher
+            attrs['user'] = user
+            attrs['user_type'] = 'teacher'
+            return attrs
+        except (Teacher.DoesNotExist, AttributeError):
+            # If not a teacher, check if they're a student
+            try:
+                student = user.student
+                attrs['user'] = user
+                attrs['user_type'] = 'student'
+                return attrs
+            except (Student.DoesNotExist, AttributeError):
                 raise serializers.ValidationError({
                     'non_field_errors': ['Access denied. Invalid account type.']
                 })
-            attrs['user'] = user
-            attrs['is_superuser'] = False
-            return attrs
-        except (Student.DoesNotExist, AttributeError):
-            raise serializers.ValidationError({
-                'non_field_errors': ['Access denied. Student login only.']
-            })
 
-        return attrs 
+        return attrs
 
 class TeacherSerializer(serializers.ModelSerializer):
+    first_name = serializers.CharField(source='user.first_name')
+    last_name = serializers.CharField(source='user.last_name')
+    email = serializers.EmailField(source='user.email')
+    
     class Meta:
         model = Teacher
-        fields = ['id', 'first_name', 'last_name']
+        fields = ['first_name', 'last_name', 'email', 'profile_picture']
 
 
 
@@ -245,19 +250,50 @@ class TeacherUpdateSerializer(serializers.Serializer):
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['uid', 'name', 'category', 'description', 'teachers', 'created_at']
-        read_only_fields = ['uid', 'created_at']
+        fields = ['uid', 'name', 'category', 'description', 'image']
 
-    def update(self, instance, validated_data):
-        teachers = validated_data.pop('teachers', None)
-        
-        # Update the basic fields
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance.save()
+class LessonResourceSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = LessonResource
+        fields = ['id', 'type', 'file', 'url', 'created_at']
+        read_only_fields = ['id', 'created_at']
 
-        # Update teachers if provided
-        if teachers is not None:
-            instance.teachers.set(teachers)
-        
-        return instance 
+class LessonSerializer(serializers.ModelSerializer):
+    created_by = TeacherSerializer(read_only=True)
+    resources = LessonResourceSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Lesson
+        fields = [
+            'uid',
+            'title',
+            'description',
+            'resources',
+            'created_by',
+            'order',
+            'created_at',
+            'updated_at'
+        ]
+        read_only_fields = ['uid', 'created_by', 'created_at', 'updated_at']
+
+    def create(self, validated_data):
+        course = self.context['course']
+        teacher = self.context['teacher']
+        lesson = Lesson.objects.create(
+            course=course,
+            created_by=teacher,
+            **validated_data
+        )
+        return lesson 
+    
+
+
+
+    
+class StudentSerializer(serializers.ModelSerializer):
+    user = UserSerializer(read_only=True)
+    enrolled_courses = CourseSerializer(many=True, read_only=True)
+    
+    class Meta:
+        model = Student
+        fields = ['id', 'user', 'first_name', 'last_name', 'enrolled_courses']

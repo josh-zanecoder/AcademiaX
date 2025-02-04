@@ -1,0 +1,752 @@
+{% extends 'teacher/teacher_page.html' %}
+
+{% block main_content %}
+<div class="flex-1 flex flex-col h-screen overflow-hidden">
+    <!-- Fixed Combined Header -->
+    <div class="sticky top-0 bg-white z-20 border-b shadow-sm">
+        <!-- Page Header -->
+        <div class="px-6 md:px-6 pt-6 pb-4">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-center">
+                    <div class="md:ml-0 ml-12">
+                        <h1 class="text-2xl font-semibold text-gray-900">{{ course.name }}</h1>
+                        <p class="text-sm text-gray-500 mt-1">{{ course.description|truncatewords:20 }}</p>
+                    </div>
+                    <div class="flex items-center gap-4">
+                        <div class="text-center">
+                            <p class="text-sm font-medium text-gray-900">{{ total_students }}</p>
+                            <p class="text-xs text-gray-500">Students</p>
+                        </div>
+                        <div class="h-8 w-[1px] bg-gray-200"></div>
+                        <div class="text-center">
+                            <p class="text-sm font-medium text-gray-900">{{ total_lessons }}</p>
+                            <p class="text-xs text-gray-500">Lessons</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tabs Navigation -->
+        <div class="px-6 border-b border-gray-200">
+            <div class="max-w-7xl mx-auto">
+                <nav class="-mb-px flex space-x-8" aria-label="Tabs">
+                    <button onclick="switchTab('lessons')"
+                            class="tab-button border-b-2 whitespace-nowrap py-4 px-1 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            id="lessons-tab">
+                        Lessons
+                    </button>
+                    <button onclick="switchTab('assessments')"
+                            class="tab-button border-b-2 whitespace-nowrap py-4 px-1 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            id="assessments-tab">
+                        Assessments
+                    </button>
+                    <button onclick="switchTab('students')"
+                            class="tab-button border-b-2 whitespace-nowrap py-4 px-1 font-medium text-sm border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300"
+                            id="students-tab">
+                        Students
+                    </button>
+                </nav>
+            </div>
+        </div>
+
+        <!-- Action Buttons -->
+        <div class="px-6 py-4 bg-gray-50 border-t">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex items-center gap-4">
+                    <button onclick="openLessonModal()" 
+                            class="tab-content lessons-content inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-lg hover:bg-blue-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                        </svg>
+                        Add Lesson
+                    </button>
+                    <button onclick="openAssessmentModal()" 
+                            class="tab-content assessments-content hidden inline-flex items-center gap-2 px-4 py-2 bg-purple-600 text-white text-sm font-medium rounded-lg hover:bg-purple-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                        </svg>
+                        Add Assessment
+                    </button>
+                    <button onclick="openInviteModal()" 
+                            class="tab-content students-content hidden inline-flex items-center gap-2 px-4 py-2 bg-green-600 text-white text-sm font-medium rounded-lg hover:bg-green-700 transition-colors">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                        </svg>
+                        Invite Students
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content Area -->
+    <div class="flex-1 overflow-y-auto bg-gray-50 px-6 py-6">
+        <div class="max-w-7xl mx-auto">
+            <!-- Lessons Section -->
+            <div class="tab-content lessons-content bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Lessons</h2>
+                </div>
+                <div class="p-4">
+                    {% if course.lessons.all %}
+                        <div class="space-y-4">
+                            {% for lesson in course.lessons.all %}
+                            <div class="bg-gray-50 rounded-lg border border-gray-200 overflow-hidden">
+                                <div class="p-4">
+                                    <div class="flex justify-between items-start">
+                                        <div class="flex-1">
+                                            <div class="flex items-center gap-3 mb-2">
+                                                <!-- Creator Avatar -->
+                                                <div class="flex-shrink-0">
+                                                    <div class="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center">
+                                                        <span class="text-sm font-medium text-blue-600">
+                                                            {{ lesson.created_by.user.first_name|make_list|first|upper }}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <!-- Creator Info & Timestamp -->
+                                                <div>
+                                                    <h3 class="text-lg font-medium text-gray-900">{{ lesson.title }}</h3>
+                                                    <div class="flex items-center gap-2 text-sm text-gray-500">
+                                                        <span>{{ lesson.created_by.user.get_full_name }}</span>
+                                                        <span>•</span>
+                                                        <span>{{ lesson.created_at|date:"M d, Y" }}</span>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            <!-- Description with clickable links -->
+                                            <p class="mt-1 text-sm text-gray-500 whitespace-pre-wrap">{{ lesson.description|urlize }}</p>
+                                            
+                                            <!-- Resources -->
+                                            {% if lesson.resources.all %}
+                                                <div class="mt-4 space-y-2">
+                                                    {% for resource in lesson.resources.all %}
+                                                        {% if resource.type == 'file' %}
+                                                            <a href="{{ resource.file.url }}" target="_blank" 
+                                                               class="flex items-center gap-2 text-sm bg-blue-50 text-blue-600 hover:text-blue-700 hover:bg-blue-100 p-2 rounded-lg transition-colors duration-150">
+                                                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                                          d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                                                                </svg>
+                                                                <span class="truncate">{{ resource.file.name }}</span>
+                                                            </a>
+                                                        {% elif resource.type == 'link' %}
+                                                            <a href="{{ resource.url }}" target="_blank" 
+                                                               class="flex items-center gap-2 text-sm bg-purple-50 text-purple-600 hover:text-purple-700 hover:bg-purple-100 p-2 rounded-lg transition-colors duration-150">
+                                                                <svg class="w-4 h-4 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                                          d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"/>
+                                                                </svg>
+                                                                <span class="truncate">{{ resource.url|truncatechars:50 }}</span>
+                                                            </a>
+                                                        {% endif %}
+                                                    {% endfor %}
+                                                </div>
+                                            {% endif %}
+                                        </div>
+
+                                        <!-- Actions -->
+                                        <div class="flex items-center gap-2">
+                                            <button onclick="editLesson('{{ lesson.uid }}')" 
+                                                    class="p-2 text-gray-400 hover:text-blue-600 rounded-lg hover:bg-gray-100">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                          d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                                </svg>
+                                            </button>
+                                            <button onclick="deleteLesson('{{ lesson.uid }}')" 
+                                                    class="p-2 text-gray-400 hover:text-red-600 rounded-lg hover:bg-gray-100">
+                                                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                          d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-6">
+                            <p class="text-sm text-gray-500">No lessons yet</p>
+                            <button onclick="openLessonModal()" 
+                                    class="mt-2 inline-flex items-center gap-2 px-4 py-2 text-sm font-medium text-blue-600 hover:text-blue-700">
+                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                </svg>
+                                Add your first lesson
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Assessments Section -->
+            <div class="tab-content assessments-content hidden bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Assessments</h2>
+                </div>
+                <div class="p-4">
+                    {% if course.assessments.all %}
+                        <div class="space-y-3">
+                            {% for assessment in course.assessments.all %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium
+                                        {% if assessment.type == 'quiz' %}
+                                            bg-purple-100 text-purple-800
+                                        {% elif assessment.type == 'assignment' %}
+                                            bg-green-100 text-green-800
+                                        {% else %}
+                                            bg-orange-100 text-orange-800
+                                        {% endif %}">
+                                        {{ assessment.type|title }}
+                                    </span>
+                                    <span class="text-sm font-medium text-gray-900">{{ assessment.title }}</span>
+                                </div>
+                                <button class="text-gray-400 hover:text-purple-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-6">
+                            <p class="text-sm text-gray-500">No assessments yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Students Section -->
+            <div class="tab-content students-content hidden bg-white rounded-xl shadow-sm border border-gray-200">
+                <div class="p-4 border-b border-gray-200">
+                    <h2 class="text-lg font-medium text-gray-900">Students</h2>
+                </div>
+                <div class="p-4">
+                    {% if students %}
+                        <div class="space-y-3">
+                            {% for student in students %}
+                            <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-8 h-8 rounded-full bg-gray-200 flex items-center justify-center">
+                                        {% if student.profile_image %}
+                                            <img src="{{ student.profile_image.url }}" alt="" class="w-8 h-8 rounded-full object-cover">
+                                        {% else %}
+                                            <span class="text-sm font-medium text-gray-600">
+                                                {{ student.first_name|make_list|first|upper }}
+                                            </span>
+                                        {% endif %}
+                                    </div>
+                                    <div>
+                                        <p class="text-sm font-medium text-gray-900">
+                                            {{ student.first_name }} {{ student.last_name }}
+                                        </p>
+                                        <p class="text-xs text-gray-500">{{ student.email }}</p>
+                                    </div>
+                                </div>
+                                <button class="text-gray-400 hover:text-red-600">
+                                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                    </svg>
+                                </button>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    {% else %}
+                        <div class="text-center py-6">
+                            <p class="text-sm text-gray-500">No students enrolled yet</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    
+</div>
+
+<!-- Assessment Modal Template -->
+<div id="assessmentModal" class="hidden">
+    <div class="mb-4">
+        <label class="block text-sm font-medium text-gray-700">Assessment Type</label>
+        <select name="type" class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-purple-500 focus:ring-purple-500">
+            <option value="quiz">Quiz</option>
+            <option value="assignment">Assignment</option>
+            <option value="exam">Exam</option>
+        </select>
+    </div>
+    <!-- Other assessment fields -->
+</div>
+
+<!-- Lesson Modal -->
+<div id="lessonModal" class="hidden fixed inset-0 bg-gray-900/50 backdrop-blur-sm z-50 overflow-y-auto">
+    <div class="min-h-screen px-4 text-center">
+        <!-- Background overlay -->
+        <div class="fixed inset-0 transition-opacity" aria-hidden="true">
+            <div class="absolute inset-0"></div>
+        </div>
+
+        <!-- Modal panel -->
+        <div class="inline-block w-full max-w-2xl my-8 text-left align-middle transition-all transform bg-white shadow-2xl rounded-2xl">
+            <!-- Header -->
+            <div class="flex items-center justify-between p-6 border-b">
+                <h3 class="text-xl font-semibold text-gray-900 flex items-center gap-2">
+                    <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 13h6m-3-3v6m-9 1V7a2 2 0 012-2h6l2 2h6a2 2 0 012 2v8a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
+                    </svg>
+                    <span id="modalTitle">Add New Material</span>
+                </h3>
+                <button onclick="closeLessonModal()" class="text-gray-400 hover:text-gray-500 focus:outline-none">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Form -->
+            <form id="lessonForm" class="p-6 space-y-6">
+                {% csrf_token %}
+                
+                <!-- Title Input -->
+                <div>
+                    <label for="title" class="block text-sm font-medium text-gray-700">Title</label>
+                    <input type="text" name="title" id="title" required
+                           class="mt-1 block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                           placeholder="Enter lesson title">
+                </div>
+
+                <!-- Description Input -->
+                <div>
+                    <label for="description" class="block text-sm font-medium text-gray-700">Description</label>
+                    <div class="mt-1">
+                        <textarea name="description" id="description" rows="4"
+                                  class="block w-full px-3 py-2 bg-white border border-gray-300 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                                  placeholder="Describe your lesson - URLs will be automatically detected"></textarea>
+                        <p class="mt-1 text-sm text-gray-500">Any URLs in the description will be automatically detected</p>
+                    </div>
+                </div>
+
+                <!-- Files Section -->
+                <div class="space-y-3">
+                    <label class="block text-sm font-medium text-gray-700">Files</label>
+                    <div class="mt-1 flex justify-center px-6 pt-5 pb-6 border-2 border-gray-300 border-dashed rounded-xl hover:border-blue-500 transition-colors">
+                        <div class="space-y-1 text-center">
+                            <svg class="mx-auto h-12 w-12 text-gray-400" stroke="currentColor" fill="none" viewBox="0 0 48 48">
+                                <path d="M28 8H12a4 4 0 00-4 4v20m32-12v8m0 0v8a4 4 0 01-4 4H12a4 4 0 01-4-4v-4m32-4l-3.172-3.172a4 4 0 00-5.656 0L28 28M8 32l9.172-9.172a4 4 0 015.656 0L28 28m0 0l4 4m4-24h8m-4-4v8m-12 4h.02" 
+                                      stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                            </svg>
+                            <div class="flex text-sm text-gray-600">
+                                <label for="files" class="relative cursor-pointer bg-white rounded-md font-medium text-blue-600 hover:text-blue-500">
+                                    <span>Select multiple files</span>
+                                    <input id="files" name="files[]" type="file" multiple 
+                                           class="sr-only"
+                                           accept=".pdf,.doc,.docx,.ppt,.pptx,.xls,.xlsx,.txt,.zip,.rar,.jpg,.jpeg,.png,.gif">
+                                </label>
+                                <p class="pl-1">or drag and drop</p>
+                            </div>
+                            <p class="text-xs text-gray-500">Hold Ctrl or Shift to select multiple files</p>
+                        </div>
+                    </div>
+                    <!-- File Preview Section -->
+                    <div id="filePreview" class="hidden mt-3">
+                        <div class="text-sm font-medium text-gray-700 mb-2">Selected Files:</div>
+                        <div id="fileList" class="max-h-48 overflow-y-auto space-y-2 bg-gray-50 rounded-lg p-3"></div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="mt-6 flex items-center justify-end gap-3 pt-6 border-t">
+                    <button type="button" onclick="closeLessonModal()"
+                            class="px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg shadow-sm hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Cancel
+                    </button>
+                    <button type="submit" id="submitButton"
+                            class="px-4 py-2 text-sm font-medium text-white bg-blue-600 border border-transparent rounded-lg shadow-sm hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
+                        Add Material
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+
+<script>
+function switchTab(tabName) {
+    // Update tab buttons
+    document.querySelectorAll('.tab-button').forEach(button => {
+        button.classList.remove('border-blue-500', 'text-blue-600');
+        button.classList.add('border-transparent', 'text-gray-500');
+    });
+    document.getElementById(`${tabName}-tab`).classList.add('border-blue-500', 'text-blue-600');
+    
+    // Show/hide content sections
+    document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.add('hidden');
+    });
+    document.querySelectorAll(`.${tabName}-content`).forEach(content => {
+        content.classList.remove('hidden');
+    });
+
+    // Update action buttons visibility
+    const actionButtons = document.querySelectorAll('.tab-content');
+    actionButtons.forEach(button => {
+        if (button.classList.contains(`${tabName}-content`)) {
+            button.classList.remove('hidden');
+        } else {
+            button.classList.add('hidden');
+        }
+    });
+}
+
+// Initialize tabs when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    switchTab('lessons');
+});
+
+function openLessonModal() {
+    document.getElementById('lessonModal').classList.remove('hidden');
+}
+
+function closeLessonModal() {
+    document.getElementById('lessonModal').classList.add('hidden');
+    document.getElementById('lessonForm').reset();
+    document.getElementById('modalTitle').textContent = 'Add New Material';
+    document.getElementById('submitButton').textContent = 'Add Material';
+    
+    // Reset file preview
+    const filePreview = document.getElementById('filePreview');
+    if (filePreview) {
+        filePreview.classList.add('hidden');
+        const fileList = document.getElementById('fileList');
+        if (fileList) {
+            fileList.innerHTML = '';
+        }
+    }
+}
+
+// File handling
+const fileInput = document.getElementById('files');
+const filePreview = document.getElementById('filePreview');
+const fileList = document.getElementById('fileList');
+
+fileInput.addEventListener('change', function(e) {
+    fileList.innerHTML = ''; // Clear previous list
+    
+    if (this.files.length > 0) {
+        filePreview.classList.remove('hidden');
+        
+        Array.from(this.files).forEach(file => {
+            const fileItem = document.createElement('div');
+            fileItem.className = 'flex items-center justify-between p-2 bg-white rounded-lg shadow-sm';
+            fileItem.innerHTML = `
+                <div class="flex items-center gap-2">
+                    <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span class="text-sm text-gray-600">${file.name}</span>
+                </div>
+                <span class="text-xs text-gray-500">${formatFileSize(file.size)}</span>
+            `;
+            fileList.appendChild(fileItem);
+        });
+    } else {
+        filePreview.classList.add('hidden');
+    }
+});
+
+function formatFileSize(bytes) {
+    if (bytes === 0) return '0 Bytes';
+    const k = 1024;
+    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
+    const i = Math.floor(Math.log(bytes) / Math.log(k));
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
+}
+
+// Drag and drop handling
+const dropZone = document.querySelector('#lessonForm .border-dashed');
+
+['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, preventDefaults, false);
+});
+
+function preventDefaults(e) {
+    e.preventDefault();
+    e.stopPropagation();
+}
+
+['dragenter', 'dragover'].forEach(eventName => {
+    dropZone.addEventListener(eventName, highlight, false);
+});
+
+['dragleave', 'drop'].forEach(eventName => {
+    dropZone.addEventListener(eventName, unhighlight, false);
+});
+
+function highlight(e) {
+    dropZone.classList.add('border-blue-500');
+}
+
+function unhighlight(e) {
+    dropZone.classList.remove('border-blue-500');
+}
+
+dropZone.addEventListener('drop', handleDrop, false);
+
+function handleDrop(e) {
+    const dt = e.dataTransfer;
+    const files = dt.files;
+    fileInput.files = files;
+    
+    // Trigger change event manually
+    const event = new Event('change');
+    fileInput.dispatchEvent(event);
+}
+
+let editingLessonUid = null;
+
+async function editLesson(lessonUid) {
+    editingLessonUid = lessonUid;
+    
+    try {
+        const response = await fetch(`/teacher/courses/{{ course.uid }}/lessons/${lessonUid}/`);
+        if (!response.ok) throw new Error('Failed to fetch lesson data');
+        
+        const lesson = await response.json();
+        
+        // Update modal title and button
+        document.getElementById('modalTitle').textContent = 'Edit Material';
+        document.getElementById('submitButton').textContent = 'Save Changes';
+        
+        // Fill form with lesson data
+        document.getElementById('title').value = lesson.title;
+        document.getElementById('description').value = lesson.description;
+        
+        // Show existing files if any
+        const filePreview = document.getElementById('filePreview');
+        const fileList = document.getElementById('fileList');
+        
+        if (lesson.resources && lesson.resources.length > 0) {
+            filePreview.classList.remove('hidden');
+            fileList.innerHTML = '';
+            
+            lesson.resources.forEach(resource => {
+                if (resource.type === 'file') {
+                    const fileItem = document.createElement('div');
+                    fileItem.className = 'flex items-center justify-between p-2 bg-white rounded-lg shadow-sm';
+                    fileItem.dataset.resourceId = resource.id; // Add data attribute for easy removal
+                    fileItem.innerHTML = `
+                        <div class="flex items-center gap-2">
+                            <svg class="w-5 h-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                      d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <span class="text-sm text-gray-600">${resource.file}</span>
+                        </div>
+                        <button type="button" onclick="deleteResource(${resource.id})" 
+                                class="text-red-500 hover:text-red-700 p-1 rounded-lg hover:bg-red-50">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                            </svg>
+                        </button>
+                    `;
+                    fileList.appendChild(fileItem);
+                }
+            });
+        }
+        
+        openLessonModal();
+    } catch (error) {
+        console.error('Error:', error);
+        alert('Failed to load lesson data');
+    }
+}
+
+// Update form submission
+document.getElementById('lessonForm').addEventListener('submit', async function(e) {
+    e.preventDefault();
+    
+    const formData = new FormData();
+    formData.append('title', document.getElementById('title').value);
+    formData.append('description', document.getElementById('description').value);
+    
+    const fileInput = document.getElementById('files');
+    for (let i = 0; i < fileInput.files.length; i++) {
+        formData.append('files', fileInput.files[i]);
+    }
+
+    const url = editingLessonUid 
+        ? `/teacher/courses/{{ course.uid }}/lessons/${editingLessonUid}/`
+        : `/teacher/courses/{{ course.uid }}/lessons/`;
+    
+    const method = editingLessonUid ? 'PUT' : 'POST';
+
+    try {
+        // Show loading state
+        Swal.fire({
+            title: 'Saving...',
+            text: 'Please wait',
+            allowOutsideClick: false,
+            showConfirmButton: false,
+            willOpen: () => {
+                Swal.showLoading();
+            }
+        });
+
+        const response = await fetch(url, {
+            method: method,
+            headers: {
+                'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+            },
+            body: formData
+        });
+
+        if (response.ok) {
+            await Swal.fire({
+                icon: 'success',
+                title: editingLessonUid ? 'Lesson Updated!' : 'Lesson Created!',
+                text: editingLessonUid ? 'The lesson has been updated successfully.' : 'The lesson has been created successfully.',
+                showConfirmButton: false,
+                timer: 1500
+            });
+            window.location.reload();
+        } else {
+            const data = await response.json();
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: data.error || 'Failed to save lesson. Please try again.'
+            });
+        }
+    } catch (error) {
+        console.error('Error:', error);
+        Swal.fire({
+            icon: 'error',
+            title: 'Oops...',
+            text: 'Something went wrong! Please try again.'
+        });
+    }
+});
+
+// Update deleteLesson function
+function deleteLesson(lessonUid) {
+    Swal.fire({
+        title: 'Are you sure?',
+        text: "You won't be able to revert this!",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#EF4444',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    }).then(async (result) => {
+        if (result.isConfirmed) {
+            try {
+                const response = await fetch(`/teacher/courses/{{ course.uid }}/lessons/${lessonUid}/`, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                    }
+                });
+
+                if (response.ok) {
+                    await Swal.fire({
+                        icon: 'success',
+                        title: 'Deleted!',
+                        text: 'The lesson has been deleted.',
+                        showConfirmButton: false,
+                        timer: 1500
+                    });
+                    window.location.reload();
+                } else {
+                    Swal.fire({
+                        icon: 'error',
+                        title: 'Oops...',
+                        text: 'Failed to delete lesson. Please try again.'
+                    });
+                }
+            } catch (error) {
+                console.error('Error:', error);
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Something went wrong! Please try again.'
+                });
+            }
+        }
+    });
+}
+
+// Update deleteResource function
+async function deleteResource(resourceId) {
+    const result = await Swal.fire({
+        title: 'Delete File?',
+        text: "Are you sure you want to remove this file?",
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#EF4444',
+        cancelButtonColor: '#6B7280',
+        confirmButtonText: 'Yes, delete it!',
+        cancelButtonText: 'Cancel'
+    });
+
+    if (result.isConfirmed) {
+        try {
+            const response = await fetch(`/teacher/resources/${resourceId}/`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value,
+                }
+            });
+            
+            if (response.ok) {
+                // Remove the file item from the preview
+                const fileItem = document.querySelector(`[data-resource-id="${resourceId}"]`);
+                if (fileItem) {
+                    fileItem.remove();
+                    
+                    // Hide the preview section if no files left
+                    const fileList = document.getElementById('fileList');
+                    if (fileList.children.length === 0) {
+                        document.getElementById('filePreview').classList.add('hidden');
+                    }
+                }
+                
+                await Swal.fire({
+                    icon: 'success',
+                    title: 'Deleted!',
+                    text: 'The file has been removed.',
+                    showConfirmButton: false,
+                    timer: 1500
+                });
+            } else {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Oops...',
+                    text: 'Failed to delete file. Please try again.'
+                });
+            }
+        } catch (error) {
+            console.error('Error:', error);
+            Swal.fire({
+                icon: 'error',
+                title: 'Oops...',
+                text: 'Something went wrong! Please try again.'
+            });
+        }
+    }
+}
+</script>
+{% endblock %}
+

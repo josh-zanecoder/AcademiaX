@@ -1,0 +1,445 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Teacher Dashboard - AcademiaX{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'favicon/favicon.ico' %}">
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100">
+   
+    <div class="min-h-screen flex">
+        <!-- Sidebar -->
+        <div id="sidebar" class="bg-gray-900 text-white w-64 flex flex-col h-screen py-6 px-4 
+                        fixed md:relative inset-y-0 left-0 transform 
+                        -translate-x-full md:translate-x-0 
+                        transition-transform duration-200 ease-in-out z-30">
+            <!-- Logo -->
+            <div class="flex items-center justify-between px-2 mb-8">
+                <div class="flex items-center gap-2">
+                    <div class="bg-blue-500 rounded-lg p-2">
+                        <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                        </svg>
+                    </div>
+                    <span class="text-xl font-bold">AcademiaX</span>
+                </div>
+                <!-- Close button for mobile -->
+                <button onclick="toggleSidebar()" class="md:hidden text-gray-300 hover:text-white">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Navigation -->
+            <nav class="flex-1 space-y-6 overflow-y-auto" aria-label="Main Navigation">
+                <!-- Main Menu -->
+                <div class="space-y-1">
+                    <h2 class="px-4 text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Menu</h2>
+                    
+                    <a href="{% url 'teacher_page' %}" 
+                       class="flex items-center gap-3 px-4 py-3 rounded-lg transition-colors duration-200
+                              {% if request.resolver_match.url_name == 'teacher_page' %}
+                                  bg-blue-600/90 text-white
+                              {% else %}
+                                  text-gray-300 hover:bg-gray-800 hover:text-white
+                              {% endif %}">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                        </svg>
+                        <span class="text-sm font-medium">Dashboard</span>
+                    </a>
+                </div>
+
+                <!-- Courses Section -->
+                <div class="space-y-2">
+                    <div class="px-4 flex items-center justify-between">
+                        <h2 class="text-xs font-semibold text-gray-400 uppercase tracking-wider">
+                            {% if request.resolver_match.url_name == 'course_detail' %}
+                                Current Course
+                            {% else %}
+                                My Courses
+                            {% endif %}
+                        </h2>
+                        <button onclick="openLessonModal()" 
+                                class="text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <div class="space-y-1 max-h-[280px] overflow-y-auto px-2">
+                        {% for course in user.teacher.courses_teaching.all %}
+                        <a href="{% url 'course_detail' uid=course.uid %}" 
+                           class="flex items-center gap-3 px-3 py-2 rounded-lg transition-colors duration-200
+                                    {% if request.resolver_match.url_name == 'course_detail' and course.uid|stringformat:'s' in request.path %}
+                                        bg-blue-600/90 text-white
+                                    {% else %}
+                                        text-gray-300 hover:bg-gray-800 hover:text-white
+                                    {% endif %}">
+                            <div class="flex-shrink-0 w-8 h-8 rounded-lg {% if request.resolver_match.url_name == 'course_detail' and course.uid|stringformat:'s' in request.path %}bg-blue-700{% else %}bg-gray-800{% endif %} flex items-center justify-center">
+                                {% if course.image %}
+                                    <img src="{{ course.image.url }}" alt="" class="w-8 h-8 rounded-lg object-cover">
+                                {% else %}
+                                    <svg class="w-4 h-4 {% if request.resolver_match.url_name == 'course_detail' and course.uid|stringformat:'s' in request.path %}text-white{% else %}text-gray-400{% endif %}" 
+                                         fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                    </svg>
+                                {% endif %}
+                            </div>
+                            <div class="min-w-0 flex-1">
+                                <p class="text-sm font-medium truncate">{{ course.name }}</p>
+                                <div class="flex items-center gap-3 mt-0.5">
+                                    <div class="flex items-center gap-1">
+                                        <svg class="w-3 h-3 {% if request.resolver_match.url_name == 'course_detail' and course.uid|stringformat:'s' in request.path %}text-white/80{% else %}text-gray-500{% endif %}" 
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                        </svg>
+                                        <span class="text-xs {% if request.resolver_match.url_name == 'course_detail' and course.uid|stringformat:'s' in request.path %}text-white/90{% else %}text-gray-500{% endif %}">
+                                            {{ course.students.count }}
+                                        </span>
+                                    </div>
+                                    <div class="flex items-center gap-1">
+                                        <svg class="w-3 h-3 {% if request.resolver_match.url_name == 'course_detail' and course.uid|stringformat:'s' in request.path %}text-white/80{% else %}text-gray-500{% endif %}" 
+                                             fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                        </svg>
+                                        <span class="text-xs {% if request.resolver_match.url_name == 'course_detail' and course.uid|stringformat:'s' in request.path %}text-white/90{% else %}text-gray-500{% endif %}">
+                                            {{ course.lessons.count }}
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </a>
+                        {% empty %}
+                        <div class="px-4 py-3 text-center">
+                            <p class="text-xs text-gray-500">No courses yet</p>
+                            <button onclick="openLessonModal()" 
+                                    class="mt-2 text-xs text-blue-400 hover:text-blue-300 transition-colors">
+                                Add your first course
+                            </button>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </nav>
+
+            <!-- User Section - Fixed at Bottom -->
+            <div class="mt-auto pt-4 border-t border-gray-700">
+                <div class="px-4 py-3 rounded-lg bg-gray-800">
+                    <div class="flex items-center gap-3 mb-3">
+                        <div class="w-8 h-8 rounded-full bg-gray-600 flex items-center justify-center">
+                            <span class="text-sm font-medium text-white">{{ user.teacher.first_name|make_list|first|upper }}</span>
+                        </div>
+                        <div class="flex-1 min-w-0">
+                            <p class="text-sm font-medium text-white truncate">{{ user.teacher.first_name }} {{ user.teacher.last_name }}</p>
+                            <p class="text-xs text-gray-400 truncate">Teacher</p>
+                        </div>
+                    </div>
+                    <a href="{% url 'logout' %}" 
+                       class="flex items-center gap-2 text-sm text-red-400 hover:text-red-300 transition-colors duration-200">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+                        </svg>
+                        <span>Sign Out</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+   <!-- Overlay for mobile -->
+   <div id="sidebar-overlay" 
+   onclick="toggleSidebar()"
+   class="fixed inset-0 bg-black bg-opacity-50 md:hidden z-20 hidden">
+</div>
+
+<style>
+    /* Custom scrollbar styles */
+    .overflow-y-auto::-webkit-scrollbar {
+        width: 6px;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar-track {
+        background: #f1f1f1;
+        border-radius: 3px;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar-thumb {
+        background: #888;
+        border-radius: 3px;
+    }
+
+    .overflow-y-auto::-webkit-scrollbar-thumb:hover {
+        background: #555;
+    }
+
+    /* Firefox scrollbar */
+    .overflow-y-auto {
+        scrollbar-width: thin;
+        scrollbar-color: #888 #f1f1f1;
+    }
+
+    /* Add these to your existing styles */
+    .max-h-64 {
+        max-height: 16rem;
+    }
+    
+    .max-h-64::-webkit-scrollbar {
+        width: 4px;
+    }
+    
+    .max-h-64::-webkit-scrollbar-track {
+        background: #374151;
+        border-radius: 2px;
+    }
+    
+    .max-h-64::-webkit-scrollbar-thumb {
+        background: #4B5563;
+        border-radius: 2px;
+    }
+    
+    .max-h-64::-webkit-scrollbar-thumb:hover {
+        background: #6B7280;
+    }
+    
+    .truncate {
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+</style>
+
+<script>
+    function toggleSidebar() {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const menuButton = document.getElementById('mobile-menu-button');
+        
+        if (sidebar.classList.contains('-translate-x-full')) {
+            // Open sidebar
+            sidebar.classList.remove('-translate-x-full');
+            overlay.classList.remove('hidden');
+            menuButton.classList.add('hidden'); // Hide menu button
+            document.body.style.overflow = 'hidden';
+        } else {
+            // Close sidebar
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            menuButton.classList.remove('hidden'); // Show menu button
+            document.body.style.overflow = '';
+        }
+    }
+
+    // Update resize event listener
+    window.addEventListener('resize', function() {
+        if (window.innerWidth >= 768) {
+            const sidebar = document.getElementById('sidebar');
+            const overlay = document.getElementById('sidebar-overlay');
+            const menuButton = document.getElementById('mobile-menu-button');
+            
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            menuButton.classList.remove('hidden'); // Show menu button
+            document.body.style.overflow = '';
+        }
+    });
+
+    // Update click outside event listener
+    document.addEventListener('click', function(event) {
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+        const menuButton = document.getElementById('mobile-menu-button');
+        
+        if (window.innerWidth < 768 && 
+            !sidebar.contains(event.target) && 
+            !event.target.closest('[onclick="toggleSidebar()"]')) {
+            sidebar.classList.add('-translate-x-full');
+            overlay.classList.add('hidden');
+            menuButton.classList.remove('hidden'); // Show menu button
+            document.body.style.overflow = '';
+        }
+    });
+</script>
+
+
+
+
+        <!-- Main Content -->
+        <div class="flex-1 overflow-hidden">
+            <!-- Update the mobile menu button -->
+            <div id="mobile-menu-button" class="md:hidden fixed top-6 left-4 z-40">
+                <button onclick="toggleSidebar()" 
+                        class="p-2 rounded-lg text-gray-600 hover:bg-gray-100 bg-white shadow-sm
+                               focus:outline-none focus:ring-2 focus:ring-gray-200">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                    </svg>
+                </button>
+            </div>
+
+            {% block main_content %}
+            <!-- Default dashboard content -->
+            <div class="flex-1 flex flex-col h-screen overflow-hidden">
+                <!-- Fixed Combined Header -->
+                <div class="sticky top-0 bg-white z-20 border-b shadow-sm">
+                    <!-- Page Header -->
+                    <div class="px-6 md:px-6 pt-6 pb-4">
+                        <div class="max-w-7xl mx-auto">
+                            <div class="flex justify-between items-center">
+                                <div class="flex items-center md:ml-0 ml-12">
+                                    <div>
+                                        <h1 class="text-2xl font-semibold text-gray-900">Teacher Dashboard</h1>
+                                        <p class="text-sm text-gray-500 mt-1">Manage your courses and track student progress</p>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-4">
+                                    <div class="text-center">
+                                        <p class="text-sm font-medium text-gray-900">{{ user.teacher.courses_teaching.count }}</p>
+                                        <p class="text-xs text-gray-500">Courses</p>
+                                    </div>
+                                    <div class="h-8 w-[1px] bg-gray-200"></div>
+                                    <div class="text-center">
+                                        <p class="text-sm font-medium text-gray-900">{{ total_students }}</p>
+                                        <p class="text-xs text-gray-500">Students</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Search and Add Section -->
+                    <div class="px-6 py-4">
+                        <div class="max-w-7xl mx-auto">
+                            <div class="flex items-center gap-4">
+                                <!-- Search Input -->
+                                <div class="relative flex-1">
+                                    <div class="absolute left-0 pl-3 flex items-center pointer-events-none mt-3">
+                                        <svg class="h-[18px] w-[18px] text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                                        </svg>
+                                    </div>
+                                    <input type="text" 
+                                           id="courseSearch" 
+                                           placeholder="Search your courses..." 
+                                           class="w-full px-4 py-2.5 pl-10 bg-gray-100 rounded-xl
+                                                  focus:bg-gray-50 focus:ring-0 focus:outline-none
+                                                  placeholder-gray-500 text-gray-600 text-[15px]
+                                                  transition-all"
+                                           oninput="searchCourses()">
+                                </div>
+
+                                <!-- Add Course Button -->
+                                <button onclick="openLessonModal()" 
+                                        class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 
+                                               text-white font-medium rounded-xl transition-all duration-200
+                                               hover:shadow-lg active:transform active:scale-95">
+                                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                                    </svg>
+                                    <span>Add Course</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Main Content Area -->
+                <div class="flex-1 overflow-y-auto bg-gray-50">
+                    <div class="max-w-7xl mx-auto px-6 py-6">
+                        <!-- Courses Grid -->
+                        <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-5">
+                            {% for course in user.teacher.courses_teaching.all %}
+                            <div class="course-card bg-white rounded-xl border-2 border-blue-100/60 hover:border-blue-200 
+                                        shadow-[0_0_12px_rgba(219,234,254,0.25)] hover:shadow-[0_0_15px_rgba(219,234,254,0.45)] 
+                                        transition-all duration-200">
+                                <!-- Course Image -->
+                                <div class="aspect-[4/3] w-full bg-gradient-to-br from-gray-50 to-gray-100/50 rounded-t-xl overflow-hidden">
+                                    {% if course.image %}
+                                        <img src="{{ course.image.url }}" alt="{{ course.name }}" class="w-full h-full object-cover">
+                                    {% else %}
+                                        <div class="w-full h-full flex items-center justify-center">
+                                            <svg class="h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                            </svg>
+                                        </div>
+                                    {% endif %}
+                                </div>
+
+                                <div class="p-4">
+                                    <div class="flex items-start justify-between gap-3">
+                                        <div class="min-w-0">
+                                            <h3 class="text-base font-medium text-gray-900 truncate">{{ course.name }}</h3>
+                                            <p class="text-xs text-gray-500 mt-0.5">{{ course.category }}</p>
+                                        </div>
+                                        <div class="flex gap-0.5 shrink-0">
+                                            <button onclick="openCourseModal('{{ course.uid }}')" 
+                                                    class="p-1 text-gray-400 hover:text-blue-600 rounded-md transition-colors">
+                                                <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/>
+                                                </svg>
+                                            </button>
+                                        </div>
+                                    </div>
+
+                                    <p class="mt-2 text-xs text-gray-600 line-clamp-2">{{ course.description }}</p>
+                                    
+                                    <div class="flex items-center gap-3 mt-3 pt-3 border-t border-blue-100/40">
+                                        <div class="flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/>
+                                            </svg>
+                                            <span class="text-xs text-gray-600">{{ course.students.count }} Students</span>
+                                        </div>
+                                        <div class="flex items-center gap-1">
+                                            <svg class="w-3.5 h-3.5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                            </svg>
+                                            <span class="text-xs text-gray-600">{{ course.lessons.count }} Lessons</span>
+                                        </div>
+                                    </div>
+
+                                    <!-- Action Button -->
+                                    <button onclick="openLessonModal('{{ course.uid }}')" 
+                                            class="w-full mt-3 px-4 py-2 text-sm font-medium rounded-lg text-white 
+                                                   bg-blue-600 hover:bg-blue-700 transition-colors">
+                                        View Details
+                                    </button>
+                                </div>
+                            </div>
+                            {% empty %}
+                            <div class="col-span-full">
+                                <div class="text-center py-10 bg-white rounded-xl border-2 border-blue-100/60">
+                                    <svg class="mx-auto h-10 w-10 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                                    </svg>
+                                    <h3 class="mt-3 text-sm font-medium text-gray-900">No courses yet</h3>
+                                    <p class="mt-1 text-xs text-gray-500">Get started by creating your first course</p>
+                                    <button onclick="openLessonModal()" 
+                                            class="mt-3 inline-flex items-center px-3 py-1.5 text-xs font-medium text-blue-600 bg-blue-50 rounded-lg hover:bg-blue-100 transition-colors">
+                                        Add Course
+                                    </button>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            {% endblock %}
+        </div>
+    </div>
+
+ 
+</body>
+</html>
