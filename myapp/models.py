@@ -59,6 +59,12 @@ class Course(models.Model):
     name = models.CharField(max_length=255)
     category = models.CharField(max_length=100)
     description = models.TextField()
+    image = models.ImageField(
+        upload_to='course_images/',
+        blank=True,
+        null=True,
+        help_text="Course cover image"
+    )
     teachers = models.ManyToManyField(
         Teacher, 
         related_name='courses_teaching',
@@ -88,5 +94,56 @@ class Course(models.Model):
     def get_absolute_url(self):
         return f"/courses/{self.uid}/"
 
+    def delete(self, *args, **kwargs):
+        # Delete the image file when deleting the course
+        if self.image:
+            self.image.delete(save=False)
+        super().delete(*args, **kwargs)
 
+class Lesson(models.Model):
+    uid = models.UUIDField(default=uuid.uuid4, editable=False, unique=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='lessons')
+    created_by = models.ForeignKey(Teacher, on_delete=models.SET_NULL, related_name='lessons_created', null=True)
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    order = models.PositiveIntegerField(default=0)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
 
+    class Meta:
+        ordering = ['order', 'created_at']
+
+    def __str__(self):
+        return self.title
+
+class LessonResource(models.Model):
+    RESOURCE_TYPE_CHOICES = [
+        ('file', 'File'),
+        ('link', 'Link')
+    ]
+    
+    lesson = models.ForeignKey(Lesson, on_delete=models.CASCADE, related_name='resources')
+    type = models.CharField(max_length=10, choices=RESOURCE_TYPE_CHOICES)
+    file = models.FileField(
+        upload_to='lesson_files/',
+        null=True,
+        blank=True,
+        help_text="Upload lesson materials (PDF, DOC, PPT, etc.)"
+    )
+    url = models.URLField(
+        null=True,
+        blank=True,
+        help_text="URLs will be automatically extracted from the description"
+    )
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"{self.type} resource for {self.lesson.title}"
+
+    def delete(self, *args, **kwargs):
+        if self.file:
+            self.file.delete(save=False)
+        super().delete(*args, **kwargs)
+
+    class Meta:
+        ordering = ['created_at']

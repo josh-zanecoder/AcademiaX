@@ -5,34 +5,70 @@
 {% block header %}Teacher Management{% endblock %}
 
 {% block main_content %}
-<!-- Header Section with Search and Add -->
-<div class="bg-white p-4 rounded-lg shadow-sm mb-6">
-    <div class="flex flex-col sm:flex-row gap-4 items-center">
-        <!-- Search Input -->
-        <div class="relative flex-1">
-            <input type="text" 
-                   id="teacherSearch" 
-                   placeholder="Search teachers..." 
-                   class="w-full px-4 py-2 pl-10 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                   oninput="searchTeachers()">
-            <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <svg class="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
-                </svg>
+<!-- Fixed Combined Header -->
+<div class="sticky top-0 bg-white z-20 -mt-8 -mx-6 border-b shadow-sm">
+    <!-- Page Header -->
+    <div class="px-6 pt-8 pb-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex justify-between items-center md:ml-0 ml-8">
+                <div>
+                    <h1 class="text-2xl font-semibold text-gray-900">Teacher Management</h1>
+                    <p class="text-sm text-gray-500 mt-1">Manage and organize your teaching staff</p>
+                </div>
+                <div class="flex items-center gap-4">
+                    <div class="text-center">
+                        <p class="text-sm font-medium text-gray-900">{{ teachers.count }}</p>
+                        <p class="text-xs text-gray-500">Teachers</p>
+                    </div>
+                    <div class="h-8 w-[1px] bg-gray-200"></div>
+                    <div class="text-center">
+                        <p class="text-sm font-medium text-gray-900">{{ courses.count }}</p>
+                        <p class="text-xs text-gray-500">Courses</p>
+                    </div>
+                </div>
             </div>
         </div>
-        
-        <!-- Add Teacher Button -->
-        <button id="addTeacherBtn" 
-                class="shrink-0 bg-blue-600 hover:bg-blue-700 text-white font-medium px-4 py-2 rounded-lg flex items-center gap-2 transition-colors">
-            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
-            </svg>
-            Add Teacher
-        </button>
+    </div>
+
+    <!-- Search and Add Section -->
+    <div class="px-6 py-4">
+        <div class="max-w-7xl mx-auto">
+            <div class="flex items-center gap-4">
+                <!-- Search Input -->
+                <div class="relative flex-1">
+                    <div class="absolute left-0 pl-3 flex items-center pointer-events-none">
+                        <svg class="h-[18px] w-[18px] text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                                  d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                        </svg>
+                    </div>
+                    <input type="text" 
+                           id="teacherSearch" 
+                           placeholder="Search teachers..." 
+                           class="w-full px-4 py-2.5 pl-10 bg-gray-100 rounded-xl
+                                  focus:bg-gray-50 focus:ring-0 focus:outline-none
+                                  placeholder-gray-500 text-gray-600 text-[15px]
+                                  transition-all"
+                           oninput="searchTeachers()">
+                </div>
+
+                <!-- Add Teacher Button -->
+                <button id="addTeacherBtn" 
+                        class="flex items-center gap-2 px-5 py-2.5 bg-blue-600 hover:bg-blue-700 
+                               text-white font-medium rounded-xl transition-all duration-200
+                               hover:shadow-lg active:transform active:scale-95">
+                    <svg class="w-[18px] h-[18px]" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" 
+                              d="M12 6v6m0 0v6m0-6h6m-6 0H6"/>
+                    </svg>
+                    <span>Add Teacher</span>
+                </button>
+            </div>
+        </div>
     </div>
 </div>
-
+<!-- Content Spacer -->
+<div class="h-5"></div>
 <!-- Teachers Grid -->
 <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
     {% for teacher in teachers %}

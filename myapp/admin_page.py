@@ -218,14 +218,18 @@ def get_courses(request):
 def create_course(request):
     try:
         # Extract data from request
-        teacher_ids = request.data.get('teacher_ids', [])
+        teacher_ids = request.data.getlist('teachers')  # Use getlist for multiple values
         
         data = {
             'name': request.data.get('name'),
             'category': request.data.get('category'),
             'description': request.data.get('description'),
-            'teachers': teacher_ids  # Make sure this matches your serializer field
+            'teachers': teacher_ids,
         }
+        
+        # Handle image upload
+        if 'image' in request.FILES:
+            data['image'] = request.FILES['image']
         
         print("Received data:", data)  # Debug print
         print("Teacher IDs:", teacher_ids)  # Debug print
@@ -255,7 +259,20 @@ def create_course(request):
 def update_course(request, course_id):
     try:
         course = get_object_or_404(Course, uid=course_id)
-        serializer = CourseSerializer(course, data=request.data, partial=True)
+        
+        # Prepare data for serializer
+        data = {
+            'name': request.data.get('name'),
+            'category': request.data.get('category'),
+            'description': request.data.get('description'),
+            'teachers': request.data.getlist('teachers'),
+        }
+        
+        # Handle image upload
+        if 'image' in request.FILES:
+            data['image'] = request.FILES['image']
+        
+        serializer = CourseSerializer(course, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)

@@ -1,4 +1,4 @@
-from django.shortcuts import render, redirect
+from django.shortcuts import render, redirect, get_object_or_404
 from rest_framework import status
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.response import Response
@@ -6,8 +6,12 @@ from .serializers import StudentCreateSerializer, LoginSerializer, TeacherListSe
 from django.contrib.auth import login, authenticate, logout
 import logging
 from django.contrib.auth.decorators import login_required, user_passes_test
-from .models import Student, Teacher
+from .models import Student, Teacher, Course
 from rest_framework.permissions import IsAdminUser
+from django.core.paginator import Paginator
+from django.core.exceptions import PermissionDenied
+from django.http import JsonResponse
+from django.views.decorators.http import require_http_methods
 
 logger = logging.getLogger(__name__)
 
@@ -77,38 +81,45 @@ def login_user(request):
     if serializer.is_valid():
         user = serializer.validated_data['user']
         remember = serializer.validated_data.get('remember', False)
-        is_superuser = serializer.validated_data.get('is_superuser', False)
+        user_type = serializer.validated_data.get('user_type')
         
         login(request, user)
         
         if not remember:
             request.session.set_expiry(0)
         
+        # Base response data
+        response_data = {
+            'status': 'success',
+            'message': 'Login successful',
+            'user': {
+                'username': user.username,
+                'email': user.email,
+            }
+        }
+
         # Different response based on user type
-        if is_superuser:
-            return Response({
-                'status': 'success',
-                'message': 'Login successful',
-                'redirect': '/admin_page/',  # or your custom superuser page
-                'user': {
-                    'username': user.username,
-                    'email': user.email,
-                    'is_superuser': True
-                }
+        if user_type == 'admin':
+            response_data['redirect'] = '/admin_page/'
+            response_data['user']['is_superuser'] = True
+        
+        elif user_type == 'teacher':
+            response_data['redirect'] = '/teacher/'
+            response_data['user'].update({
+                'first_name': user.teacher.first_name,
+                'last_name': user.teacher.last_name,
+                'is_teacher': True
             })
-        else:
-            return Response({
-                'status': 'success',
-                'message': 'Login successful',
-                'redirect': '/student_page/',
-                'user': {
-                    'username': user.username,
-                    'email': user.email,
-                    'first_name': user.student.first_name,
-                    'last_name': user.student.last_name,
-                    'is_superuser': False
-                }
+        
+        else:  # student
+            response_data['redirect'] = '/student_page/'
+            response_data['user'].update({
+                'first_name': user.student.first_name,
+                'last_name': user.student.last_name,
+                'is_student': True
             })
+
+        return Response(response_data)
     
     return Response({
         'status': 'error',
@@ -119,11 +130,3 @@ def login_user(request):
 def logout_user(request):
     logout(request)
     return redirect('index')  # Redirect to home page after logout
-
-@api_view(['GET'])
-@permission_classes([IsAdminUser])
-def get_teachers(request):
-    teachers = Teacher.objects.all()
-    serializer = TeacherListSerializer(teachers, many=True)
-    return Response(serializer.data)
-
