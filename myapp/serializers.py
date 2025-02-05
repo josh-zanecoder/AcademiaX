@@ -1,5 +1,5 @@
 from rest_framework import serializers
-from .models import Student, UserProfile, Course, Teacher, Lesson, LessonResource
+from .models import Student, UserProfile, Course, Teacher, Lesson, LessonResource, Assessment, AssessmentScore
 from django.contrib.auth import authenticate, get_user_model
 from django.contrib.auth.hashers import check_password
 from django.contrib.auth.models import User as DjangoUser
@@ -185,7 +185,6 @@ class TeacherCreateSerializer(serializers.Serializer):
             raise serializers.ValidationError(str(e))
 
 class TeacherUpdateSerializer(serializers.Serializer):
-
     username = serializers.CharField(max_length=150)
     email = serializers.EmailField()
     first_name = serializers.CharField(max_length=100)
@@ -193,6 +192,7 @@ class TeacherUpdateSerializer(serializers.Serializer):
     profile_picture = serializers.ImageField(required=False, allow_null=True)
     course_ids = serializers.CharField(required=False)
     is_active = serializers.BooleanField(required=False)
+    password = serializers.CharField(required=False, write_only=True, allow_blank=True)
 
     def validate_username(self, value):
         instance = self.instance
@@ -206,12 +206,22 @@ class TeacherUpdateSerializer(serializers.Serializer):
             raise serializers.ValidationError("This email is already registered.")
         return value
 
+    def validate_password(self, value):
+        if value and len(value) < 8:
+            raise serializers.ValidationError("Password must be at least 8 characters long.")
+        return value
+
     def update(self, instance, validated_data):
         try:
             # Update user information
             user = instance.user
             user.username = validated_data.get('username', user.username)
             user.email = validated_data.get('email', user.email)
+            
+            # Handle password update if provided
+            password = validated_data.get('password')
+            if password:
+                user.set_password(password)
             
             # Update active status if provided
             if 'is_active' in validated_data:
@@ -226,6 +236,12 @@ class TeacherUpdateSerializer(serializers.Serializer):
 
             # Update profile picture if provided
             if 'profile_picture' in validated_data:
+                # Delete old profile picture if it exists
+                if instance.profile_picture:
+                    try:
+                        instance.profile_picture.delete(save=False)
+                    except Exception:
+                        pass  # Ignore errors if file doesn't exist
                 instance.profile_picture = validated_data['profile_picture']
 
             instance.save()
@@ -239,18 +255,13 @@ class TeacherUpdateSerializer(serializers.Serializer):
             return instance
             
         except Exception as e:
-            raise serializers.ValidationError(str(e)) 
-        
-
-
-
-
-
+            raise serializers.ValidationError(str(e))
 
 class CourseSerializer(serializers.ModelSerializer):
     class Meta:
         model = Course
-        fields = ['uid', 'name', 'category', 'description', 'image']
+        fields = ['uid', 'name', 'category', 'description', 'image', 'created_by', 'teachers']
+        read_only_fields = ['uid', 'created_by']
 
 class LessonResourceSerializer(serializers.ModelSerializer):
     class Meta:
@@ -297,3 +308,20 @@ class StudentSerializer(serializers.ModelSerializer):
     class Meta:
         model = Student
         fields = ['id', 'user', 'first_name', 'last_name', 'enrolled_courses']
+
+class AssessmentSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Assessment
+        fields = ['id', 'course', 'title', 'type', 'link', 'max_score', 'due_date', 'description']
+        read_only_fields = ['id']
+
+class AssessmentScoreSerializer(serializers.ModelSerializer):
+    student_name = serializers.SerializerMethodField()
+
+    class Meta:
+        model = AssessmentScore
+        fields = ['id', 'assessment', 'student', 'score', 'student_name']
+        read_only_fields = ['id']
+
+    def get_student_name(self, obj):
+        return obj.student.user.get_full_name() or obj.student.user.username

@@ -441,33 +441,38 @@ const loadingConfig = {
 };
 
 async function submitTeacherForm() {
-    try {
-        const teacherId = document.getElementById('teacherId').value;
-        const isEdit = !!teacherId;
+    const teacherId = document.getElementById('teacherId').value;
+    const isEdit = Boolean(teacherId);
+    const submitButton = document.getElementById('submitButton');
+    const originalButtonText = submitButton.textContent;
 
-        loadingConfig.message = isEdit ? 'Updating teacher...' : 'Creating new teacher...';
-        Swal.fire(loadingConfig);
+    try {
+        submitButton.disabled = true;
+        submitButton.textContent = isEdit ? 'Updating...' : 'Creating...';
 
         const formData = new FormData();
         
-        // Add basic teacher information
+        // Add basic fields
         formData.append('username', document.getElementById('teacherUsername').value);
         formData.append('email', document.getElementById('teacherEmail').value);
-        if (!isEdit) {
-            formData.append('password', document.getElementById('teacherPassword').value);
-        }
         formData.append('first_name', document.getElementById('teacherFirstName').value);
         formData.append('last_name', document.getElementById('teacherLastName').value);
-
-        // Add active status
-        if (isEdit) {
-            formData.append('is_active', document.getElementById('teacherIsActive').checked);
+        
+        // Handle password - only add if it's not empty
+        const password = document.getElementById('teacherPassword').value;
+        if (password.trim()) {
+            formData.append('password', password);
         }
 
         // Add profile picture if selected
         const profilePicture = document.getElementById('teacherProfilePicture').files[0];
         if (profilePicture) {
             formData.append('profile_picture', profilePicture);
+        }
+
+        // Add active status if editing
+        if (isEdit) {
+            formData.append('is_active', document.getElementById('teacherIsActive').checked);
         }
 
         // Add selected courses
@@ -477,6 +482,11 @@ async function submitTeacherForm() {
 
         const url = isEdit ? `/api/teachers/${teacherId}/update/` : '/api/teachers/create/';
         const method = isEdit ? 'PUT' : 'POST';
+
+        // Log formData contents for debugging
+        for (let pair of formData.entries()) {
+            console.log(pair[0] + ': ' + pair[1]);
+        }
 
         const response = await fetch(url, {
             method: method,
@@ -488,7 +498,7 @@ async function submitTeacherForm() {
 
         const data = await response.json();
 
-        if (response.ok) {
+        if (response.ok && data.status === 'success') {
             await Swal.fire({
                 icon: 'success',
                 title: 'Success!',
@@ -500,7 +510,18 @@ async function submitTeacherForm() {
             closeTeacherModal();
             window.location.reload();
         } else {
-            throw new Error(data.error || `Failed to ${isEdit ? 'update' : 'create'} teacher`);
+            // Handle validation errors
+            if (data.errors) {
+                Object.keys(data.errors).forEach(field => {
+                    const errorElement = document.querySelector(`.error-${field}`);
+                    if (errorElement) {
+                        errorElement.textContent = data.errors[field].join(', ');
+                    }
+                });
+                throw new Error('Please check the form for errors');
+            } else {
+                throw new Error(data.error || `Failed to ${isEdit ? 'update' : 'create'} teacher`);
+            }
         }
     } catch (error) {
         console.error('Error submitting form:', error);
@@ -510,6 +531,9 @@ async function submitTeacherForm() {
             text: error.message,
             confirmButtonColor: '#3085d6'
         });
+    } finally {
+        submitButton.disabled = false;
+        submitButton.textContent = originalButtonText;
     }
 }
 

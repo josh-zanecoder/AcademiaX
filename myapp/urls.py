@@ -50,4 +50,21 @@ urlpatterns = [
   path('enroll/<uuid:course_uid>/', student.enroll_course, name='enroll_course'),
   path('student/course/<uuid:uid>/', student.student_course_detail, name='student_course_detail'),
   path('api/student/unenroll/<uuid:course_uid>/', student.unenroll_course, name='unenroll_course'),
+
+  path('api/teacher/course/<uuid:course_uid>/', teacher.get_course, name='get_course'),
+  path('api/teacher/course/create/', teacher.create_course, name='create_course'),
+  path('api/teacher/course/<uuid:course_uid>/update/', teacher.update_course, name='update_course'),
+
+  path('teacher/course/<uuid:course_uid>/assessment/', teacher.course_assessment, name='course_assessment'),
+  path('api/teacher/assessment/create/', teacher.create_assessment, name='create_assessment'),
+  path('api/teacher/assessment/<uuid:assessment_id>/', teacher.get_assessment, name='get_assessment'),
+  path('api/teacher/assessment/<uuid:assessment_id>/update/', teacher.update_assessment, name='update_assessment'),
+  path('api/teacher/assessment/<uuid:assessment_id>/scores/', teacher.get_assessment_scores, name='get_assessment_scores'),
+  path('api/teacher/assessment/<uuid:assessment_id>/scores/update/', teacher.update_assessment_scores, name='update_assessment_scores'),
+  path('api/teacher/assessment/<uuid:assessment_id>/submissions/', teacher.get_assessment_submissions, name='get_assessment_submissions'),
+  path('api/teacher/assessment/<uuid:assessment_id>/submission/<uuid:submission_id>/grade/', teacher.grade_submission, name='grade_submission'),
+  path('api/teacher/submission/<uuid:submission_id>/download/', teacher.download_submission, name='download_submission'),
+
+  path('api/teacher/course/<uuid:course_uid>/assessments/', teacher.get_course_assessments, name='get_course_assessments'),
+
 ]
