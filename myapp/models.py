@@ -147,3 +147,68 @@ class LessonResource(models.Model):
 
     class Meta:
         ordering = ['created_at']
+
+class Assessment(models.Model):
+    ASSESSMENT_TYPES = [
+        ('quiz', 'Quiz'),
+        ('assignment', 'Assignment'),
+        ('exam', 'Exam'),
+    ]
+    
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, related_name='assessments')
+    title = models.CharField(max_length=255)
+    description = models.TextField(blank=True)
+    type = models.CharField(max_length=20, choices=ASSESSMENT_TYPES)
+    link = models.URLField(help_text="Google Forms link", blank=True)
+    max_score = models.PositiveIntegerField()
+    due_date = models.DateTimeField(null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+    
+    # New fields for file handling
+    instructions_file = models.FileField(upload_to='assessment_instructions/', null=True, blank=True)
+    allow_submissions = models.BooleanField(default=True)
+    submission_folder = models.CharField(max_length=255, blank=True, help_text="Google Drive folder ID for submissions")
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return f"{self.title} - {self.course.name}"
+
+class AssessmentSubmission(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE, related_name='submissions')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='assessment_submissions')
+    submitted_file = models.FileField(upload_to='assessment_submissions/')
+    submission_date = models.DateTimeField(auto_now_add=True)
+    comments = models.TextField(blank=True)
+    status = models.CharField(max_length=20, default='submitted', 
+                            choices=[('draft', 'Draft'),
+                                   ('submitted', 'Submitted'),
+                                   ('late', 'Late'),
+                                   ('graded', 'Graded')])
+
+    class Meta:
+        unique_together = ['assessment', 'student']
+        ordering = ['-submission_date']
+
+    def __str__(self):
+        return f"{self.student.user.get_full_name()} - {self.assessment.title}"
+
+class AssessmentScore(models.Model):
+    id = models.UUIDField(primary_key=True, default=uuid.uuid4, editable=False)
+    assessment = models.ForeignKey(Assessment, on_delete=models.CASCADE, related_name='scores')
+    student = models.ForeignKey(Student, on_delete=models.CASCADE, related_name='assessment_scores')
+    score = models.FloatField()
+    feedback = models.TextField(blank=True)
+    submitted_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        unique_together = ['assessment', 'student']
+        ordering = ['-submitted_at']
+
+    def __str__(self):
+        return f"{self.student.user.get_full_name()} - {self.assessment.title}"

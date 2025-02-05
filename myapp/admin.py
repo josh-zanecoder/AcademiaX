@@ -3,6 +3,9 @@ from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.utils.html import format_html
 from .models import Course, Teacher, UserProfile, Student
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
 
 class UserProfileInline(admin.StackedInline):
     model = UserProfile
@@ -107,3 +110,4 @@ admin.site.register(User, CustomUserAdmin)
 admin.site.register(Teacher, TeacherAdmin)
 admin.site.register(Student, StudentAdmin)
 admin.site.register(Course, CourseAdmin)
+

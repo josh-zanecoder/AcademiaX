@@ -139,14 +139,22 @@ def create_teacher(request):
 @api_view(['PUT'])
 @permission_classes([IsAdminUser])
 def update_teacher(request, teacher_id):
-
     try:
         teacher = get_object_or_404(Teacher, id=teacher_id)
         serializer = TeacherUpdateSerializer(teacher, data=request.data, context={'request': request})
         
         if serializer.is_valid():
+            # Handle password update if provided
+            password = request.data.get('password')
+            if password and password.strip():  # Check if password exists and is not empty
+                user = teacher.user
+                user.set_password(password.strip())
+                user.save()
+            
             teacher = serializer.save()
+            
             return Response({
+                'status': 'success',
                 'message': 'Teacher updated successfully',
                 'teacher': {
                     'id': teacher.id,
@@ -154,15 +162,20 @@ def update_teacher(request, teacher_id):
                     'last_name': teacher.last_name,
                     'username': teacher.user.username,
                     'email': teacher.user.email,
-                    'profile_picture': teacher.profile_picture.url if teacher.profile_picture else None
+                    'profile_picture': teacher.profile_picture.url if teacher.profile_picture else None,
+                    'is_active': teacher.user.is_active
                 }
             })
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        return Response({
+            'status': 'error',
+            'errors': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
         
     except Exception as e:
+        print(f"Error updating teacher: {str(e)}")  # Add logging
         return Response({
-            'error': 'Failed to update teacher',
-            'detail': str(e)
+            'status': 'error',
+            'message': str(e)
         }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
     
 
@@ -265,18 +278,28 @@ def update_course(request, course_id):
             'name': request.data.get('name'),
             'category': request.data.get('category'),
             'description': request.data.get('description'),
-            'teachers': request.data.getlist('teachers'),
         }
         
         # Handle image upload
         if 'image' in request.FILES:
             data['image'] = request.FILES['image']
         
+        # Handle teachers assignment
+        if 'teachers' in request.data:
+            data['teachers'] = request.data.getlist('teachers')
+        
         serializer = CourseSerializer(course, data=data, partial=True)
         if serializer.is_valid():
             serializer.save()
-            return Response(serializer.data)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+            return Response({
+                'status': 'success',
+                'message': 'Course updated successfully',
+                'course': serializer.data
+            })
+        return Response({
+            'status': 'error',
+            'message': serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
     except Exception as e:
         return Response({
             'error': 'Failed to update course',
